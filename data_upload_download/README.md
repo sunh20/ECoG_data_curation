@@ -8,6 +8,7 @@ A:  Uploading pipeline for new data
 
 B:  Downloading data
 
+
 ## Section A: Uploading pipeline for new data
 
 ### Overview
@@ -16,16 +17,24 @@ When we receive new patients from the hospital, the file names are de-identified
 
 Additionally, we have old copies of files on Azure, which can be useful if some Natus files are missing for a particular subject.
 
+
 **Contents:**
+
 I.      De-identification
+
 II.     Uploading to S3
+
 III.    Uploading to Glacier    
+
 
 ### Part I: De-identification
 
 Once the data has been uploaded onto a lab computer, de-identify the folder names. You will need these scripts, which can be run in Python 3:
+
     - removeFiles_inOrder.py
+    
     - de_id.py
+
 
 #### Step 1: If there are folders with the SNC/VTC text output, change the subject names in their foldernames to all lowercase
 This avoids confusion in later scripts.
@@ -82,11 +91,15 @@ upload_to_s3.py -d <data_source> -b <bucket_name> -t <data_type>
 **data_source** should be the folder above all of the patients' video/EDF folders (I usually put them in a *to_upload* folder). If there are multiple patients under this folder, they will all be uploaded.
 
 **bucket_name** is the S3 bucket (or folder) that the data goes into.
+
         For video, use *uwecogvidwest*
+        
         For EDF, use *uwecogwest*
         
 **data_type** specifies which type of data you are uploading
+
         For video, use *v*
+        
         For EDF, use *e*
 
 ### Part III: Uploading to Glacier
