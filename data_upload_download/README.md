@@ -14,7 +14,7 @@ C:  Reverting subject ID's
 
 ### Overview
 
-When we receive new patients from the hospital, the file names are de-identified (replaced with an 8-digit code) and backed up on both Amazon S3 and Glacier. S3 is an easy to access backup, while Glacier is a last-resort backup in case several things go wrong (it also takes longer to back data up). The data should also be backed up on NAS so that people can access it across computers, which will happen if the data is placed in an 'ecog_project' folder on Cylon/Salarian.
+When we receive new patients from the hospital, the file names are de-identified (replaced with an 8-digit code) and backed up on both Amazon S3 and Glacier. S3 is an easy to access backup, while Glacier is a last-resort backup in case several things go wrong (it also takes longer to back data up). The data should also be backed up on NAS so that people can access it across computers, which will happen if the data is placed in an 'ecog_project' folder on Cylon/Salarian. Currently, the data waiting to be uploaded is stored temporarily in */data2/users/hmc/* on Cylon.
 
 Additionally, we have old copies of files on Azure, which can be useful if some Natus files are missing for a particular subject.
 
