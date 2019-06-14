@@ -8,6 +8,7 @@ A:  Uploading pipeline for new data
 
 B:  Downloading data
 
+C:  Reverting subject ID's
 
 ## Section A: Uploading pipeline for new data
 
@@ -231,3 +232,23 @@ Use *download_from_s3.py*. It has similar arguments to the upload script.
 ### Part III. Downloading from Glacier
 
 TBD
+
+
+## Section C: Reverting subject ID's
+
+This is useful for reading files in to Neuroworks (Natus Datashare), so this script is tailored for the video folder structure (not EDF's).
+
+**First, make a copy of the files you are using (or make sure there is a copy on NAS). Then revert the patient's ID.**
+
+```
+python revert_id.py -d <dir_path> -n <sbj_last_name> -m <mode>
+```
+
+**dir_path** is the filepath of the patient's directory where the files are
+
+**sbj_last_name** is the last name of the subject (get from online spreadsheet)
+        
+**mode** is whether to swap sbjID with patient name or vice versa
+
+-   *d* is sbjID -> patient name (revert to name)
+-   *i* is patient name -> sbjID (de-identify)
