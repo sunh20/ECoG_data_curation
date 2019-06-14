@@ -3,7 +3,9 @@
 Several provided scripts for uploading and downloading video/ECoG data between a local directory and S3, Glacier, or Azure.
 
 **Sections:**
+
 A:  Uploading pipeline for new data
+
 B:  Downloading data
 
 ## Section A: Uploading pipeline for new data
