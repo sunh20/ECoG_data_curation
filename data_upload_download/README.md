@@ -31,9 +31,9 @@ III.    Uploading to Glacier
 
 Once the data has been uploaded onto a lab computer, de-identify the folder names. You will need these scripts, which can be run in Python 3:
 
-    - removeFiles_inOrder.py
+- removeFiles_inOrder.py
     
-    - de_id.py
+- de_id.py
 
 
 #### Step 1: If there are folders with the SNC/VTC text output, change the subject names in their foldernames to all lowercase
