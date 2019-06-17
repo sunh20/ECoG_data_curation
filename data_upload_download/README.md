@@ -148,7 +148,7 @@ python upload_glacier.py -d <data_source> -td <temp_dir> -t <data_type>
 
 ##### Multi-subject upload: run runMultGlacierUploads.sh
 
-This bash script runs *upload_glacier.py* for multiple subjects in series and deletes the tarballs after to save space. This requires modifying the *upload_glacier.py* to have the password already set (change it back afterwards). The downside with this script is that a subject's upload might not work and you'll have to make the tarball again. However, this can be useful for multiple subjects instead of waiting for each one to finish.
+This bash script runs *upload_glacier.py* for multiple subjects in series and deletes the tarballs after to save space. This requires modifying the *upload_glacier.py* to have the password already set (change it back afterwards). The downside with this script is that a subject's upload might not work and you'll have to make the tarball again (although the history is written out to a text file, so you can easily tell if it transferred or not). However, this can be useful for multiple subjects instead of waiting for each one to finish.
 
 Also, be sure to modify *runMultGlacierUploads.sh* so that the filepaths, temporary directories, and patient IDs are correct.
 
