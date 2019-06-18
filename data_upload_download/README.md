@@ -159,7 +159,7 @@ Also, be sure to modify *runMultGlacierUploads.sh* so that the filepaths, tempor
 
 #### Step 3: Check Glacier to ensure the files were properly uploaded
 
-Glacier has weird inventory code, where you enter the code below and wait a couple hours and then run the code again to see what files Glacier has. If you wait too long (about a day), though, the results will time out. It's pretty annoying.
+Glacier has weird inventory code, where you enter the code below (on Salarian, haven't set this up on Cylon yet) and wait a couple hours and then run the code again to see what files Glacier has. If you wait too long (about a day), though, the results will time out. It's pretty annoying.
 
 I suggest copying the results from this into a MS Word file and using the find command to see if the patient's video/EDF folders have been uploaded.
 
