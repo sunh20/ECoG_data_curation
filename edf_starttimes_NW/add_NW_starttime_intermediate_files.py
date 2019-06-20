@@ -27,10 +27,12 @@ def main(loadpath,sbj):
             all_secs.append(t_val[-2:])
             t_vals.append(t_val)
         
-        first_val_secs_count = len(np.nonzero(np.asarray(all_secs)==all_secs[0])[0])
-        second_val_secs_count = len(np.nonzero(np.asarray(all_secs)==all_secs[first_val_secs_count])[0])
-
-        us_val = int(round((1-(first_val_secs_count/second_val_secs_count))*1e6,-3))
+        all_secs = [x for x in all_secs if x.isdigit()] #remove any non-numerical input
+        diff_vals = np.nonzero(np.diff(np.asarray(all_secs).astype('int'))!=0)[0]
+#        first_val_secs_count = len(np.nonzero(np.asarray(all_secs)==all_secs[0])[0])
+#        second_val_secs_count = len(np.nonzero(np.asarray(all_secs)==all_secs[first_val_secs_count])[0])
+#        pdb.set_trace()
+        us_val = int(round((1-(diff_vals[0]/(diff_vals[1]-diff_vals[0])))*1e6,-3)) #first_val_secs_count/second_val_secs_count))*1e6,-3))
 
 #        print('Start time for '+sbj+'_'+day+': '+t_vals[0]+'.'+str(int(us_val/(1e3))))
 
@@ -41,16 +43,20 @@ def main(loadpath,sbj):
             fin = h5py.File(ecog_lp,'r+')
             edf_ts = dt.utcfromtimestamp(fin['start_timestamp'][()])
             NW_ts = dt.utcfromtimestamp(fin['start_timestamp'][()])
-            NW_ts = NW_ts.replace(second=int(t_vals[0][-2:]), microsecond=us_val)
-            diff_secs = (edf_ts-NW_ts).total_seconds()
+#            pdb.set_trace()
+            NW_ts = NW_ts.replace(minute=int(t_vals[0][-5:-3]), second=int(t_vals[0][-2:]), microsecond=us_val)
+            NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
+            diff_secs = (fin['start_timestamp'][()]-NW_ts_secs) #(edf_ts-NW_ts).total_seconds()
             print((NW_ts-dt.utcfromtimestamp(0)).total_seconds())
             print(fin['start_timestamp'][()])
             if (abs(diff_secs)<2):
                 e = "/start_timestamp_nw" in fin
                 if e:
                     del fin['start_timestamp_nw']
-                NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
+                #NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
                 fin.create_dataset("start_timestamp_nw", data=NW_ts_secs)
+            else:
+                print('New start time is >2 sec from EDF start time! NOT SAVING RESULT!')
             fin.close()
         else:
             print(' ')
