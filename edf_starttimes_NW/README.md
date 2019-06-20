@@ -61,6 +61,8 @@ The files needed are the first EEG, ENT, EPO, ERD, ETC, SNC, STC, VT2, VTC files
 
 **Step 2: Open the EEG file in Neuroworks**
 
+First, the files will all need to be re-identified. Open up the VT2 file and copy The filename before *_0000.avi* (should be something of the form *Last~ First_########-####-####-####-############*). Use this to change all of the files.
+
 Double-click on the EEG file to start Neuroworks. If you see a warning (yellow sign) that says *Cannot create additional picks!*, press *OK*.
 
 **Note:** If receive ‘Runtime Error!’, you can still do the export in the next steps (do it before clicking OK, as this will close the program). Always make sure the export process did create a file that has timestamps in it. 
