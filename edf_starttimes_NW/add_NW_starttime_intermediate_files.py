@@ -22,10 +22,12 @@ def main(loadpath,sbj):
         f = open(loadpath+sbj+'/'+sbj[0:3]+'_'+day+'.txt', "r", encoding = "utf-16")
         all_secs = []
         t_vals = []
+        date_vals = []
         for line_val in f:
             t_val = line_val[11:19]
             all_secs.append(t_val[-2:])
             t_vals.append(t_val)
+            date_vals.append(line_val[0:10])
         
         all_secs = [x for x in all_secs if x.isdigit()] #remove any non-numerical input
         diff_vals = np.nonzero(np.diff(np.asarray(all_secs).astype('int'))!=0)[0]
@@ -44,7 +46,7 @@ def main(loadpath,sbj):
             edf_ts = dt.utcfromtimestamp(fin['start_timestamp'][()])
             NW_ts = dt.utcfromtimestamp(fin['start_timestamp'][()])
 #            pdb.set_trace()
-            NW_ts = NW_ts.replace(minute=int(t_vals[0][-5:-3]), second=int(t_vals[0][-2:]), microsecond=us_val)
+            NW_ts = NW_ts.replace(year=int(date_vals[0][6:10]), month=int(date_vals[0][0:2]), day=int(date_vals[0][3:5]), hour=int(t_vals[0][0:2]), minute=int(t_vals[0][-5:-3]), second=int(t_vals[0][-2:]), microsecond=us_val) #NW_ts.replace(minute=int(t_vals[0][-5:-3]), second=int(t_vals[0][-2:]), microsecond=us_val)
             NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
             diff_secs = (fin['start_timestamp'][()]-NW_ts_secs) #(edf_ts-NW_ts).total_seconds()
             print((NW_ts-dt.utcfromtimestamp(0)).total_seconds())
