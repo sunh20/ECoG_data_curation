@@ -101,9 +101,9 @@ To run a single subject, use the *add_NW_starttime_intermediate_files.py* code a
 python add_NW_starttime_intermediate_files.py -lp <NW_starttimes_folderpath> -s <sbjID>
 ```
 
-**<NW_starttimes_folderpath>** is the folder path containing the exported data from Neuroworks (inside separate folders for each subject)
+**NW_starttimes_folderpath** is the folder path containing the exported data from Neuroworks (inside separate folders for each subject)
 
-**<sbjID>** is the patient ID
+**sbjID** is the patient ID
   
 
 ### Multi-subject processing
@@ -113,3 +113,5 @@ To run multiple subjects (batch processing), use *run_add_NW_starttime.sh*. Be s
 ```
 ./run_add_NW_starttime.sh
 ```
+
+**Note:** The code will generate a warning message if the EDF start time differs from the Neuroworks start time by more than 2 seconds. It will also not save the Neuroworks start time to the H5 file. It is important to look for these warning messages in the generated output because they likely indicate incorrect ordering of either the Neuroworks start time files or the EDF files (I have seen both happen). By comparing the start times for the EDFs and Neuroworks files where the differences occured, it is usually quite straightforward to figure out what went wrong. 
