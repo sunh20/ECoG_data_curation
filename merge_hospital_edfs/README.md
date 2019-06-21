@@ -2,7 +2,7 @@
 
 There are many steps to processing the ECoG data, but it should only be necessary to do one time per subject. The result of this pipeline will be processed ECoG files from midnight to midnight that can be easily synchronized with video events.
 
-## ECoG pipeline
+## ECoG pipeline steps:
 
 0. Obtain subject consent form from hospital
 
@@ -58,9 +58,57 @@ See the *data_upload_download* folder for information about this part.
 
 ## Step 3: Preprocess the EDF data
 
+As far as we can tell, the ECoG data we recieve from the EDFs does not have any preprocessing done. This means that there are issues such as DC drift, common-mode noise, and high-amplitude activity that should be corrected regardless of the analysis performed later. The techniques used are pretty simple, but they take a long time to run because of the size of each EDF. Expect several hours (if not a day or two) for each subject. The end result will be an H5 file, which can be loaded into Matlab or Python (all steps shown here use Python).
 
-## Merging hospital EDFs into full days (midnight to midnight)
+### Code for preprocessing the data
 
-### Overview
+The code for preprocessing the data is contained in *Steve_preprocPipeline.py*. However, I have a bash script, *runPreprocMain.sh*, which will make the appropriate directories and run the script across all days (the subject and load/savepaths may need to be revised).
+
+```
+./runPreprocMain.sh
+```
+
+Within *runPreprocMain.sh*, there are input arguments that may need to be revised based on where files are:
+
+**subjects:** This is the 8 alphanumeric patient code for the patient you plan to preprocess
+
+**-exec:** The path and filename of *Steve_preprocPipeline.py*
+
+**-lp:** The path of the EDF files to be loaded (should be under */.../ecog_project/edf/$subject/*, note that the subject folder fills in automatically, using $subject)
+
+**-sp:** The path to save the processed H5 files (currently, should be */.../ecog_project/derived/processed_ecog/$subject/preproc_hospital_ecog/*)
+
+**-af:** Always set this to *False*
+
+
+### Preprocessing steps
+
+#### 1. Determine high-amplitude artifacts:  
+
+These are high-amplitude artifacts that occur across all channels. Each electrode is loaded in one at a time and the absolute values of the median-sutracted signals are averaged into a global magnitude. Values in this magnitude outside 50 IQRs of the median magnitude (which is 0) are flagged as high-amplitude events. Then, a bad border of 2000 datapoints (2 seconds, usually) is then used to ensure that no high-amplitude artifacts just below the threshold are retained. These bad datapoints are set to 0.
+
+The point of doing this is minimize filtering artifacts due to sharp changes in the signal. These high-amplitude artifacts will cause filter ringing into previously fine data. By setting these artifacts to 0 across all channels, filtering is less likely to create artifacts in the data.
+
+
+### 2. Filtering:
+
+Filtering removes parts of the signal's frequency content. For ECoG data, we want to remove low-frequency drifts. Part of this has to do with the frequency content of ECoG data, where low frequencies dominate compared to higher frequencies. This can make it difficult to analyze higher frequencies, which can have useful information. Two filters are used here: 1) a bandpass filter that passes frequencies between 1-200 Hz and 2) a notch filter that removes 60 Hz line noise and its harmonics (120, 180, 240 Hz). The filters used are finite impulse response (FIR) using the MNE toolbox.
+
+
+### 3. Resampling
+
+While higher frequencies do have information, there is a limit to what we want to analyze here. The ECoG data is usually sampled at 1000 Hz from the hospital, meaning that we can look at frequencies up to ~500 Hz. We only care about frequencies up to 200 Hz at the most, so the data is downsampled to 500 Hz. This cuts the preprocessed file's disk size in half, which is useful when working with such large files. Resampling needs to be performed with low-pass filtering to avoid anti-aliasing, so the MNE toolbox's downsample script is used here.
+
+Note that some data is sampled at 2000 Hz or 256 Hz from the hospital (it happens rarely, though). In thse cases, the script automatically up/downsamples the data to 500 Hz. In addition, you may notice that the EDF sampling rate is not exactly 1000 Hz, but 999.94 Hz or something. This appears to be a bug in the code. Because of this, the script automatically rounds up the sampling rate to the appropriate value.
+
+
+
+## Step 4: Merge the hospital EDFs into full days (midnight to midnight)
 
 When we receive the EDF/video files from the hospital, they are broken up based on when the ECoG system was turned on/off. This means that they can start throughout the day (usually around 8-10am) and can last from a couple hours to an entire day. Because of this, we 
+
+
+## Step 5: Add in location information
+
+## Step 6: Create synchronization files for video events
+
