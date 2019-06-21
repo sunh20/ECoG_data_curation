@@ -53,10 +53,11 @@ def main(loadpath,sbj):
             print(fin['start_timestamp'][()])
             if (abs(diff_secs)<2):
                 e = "/start_timestamp_nw" in fin
-                if e:
-                    del fin['start_timestamp_nw']
+                #if e:
+                    #del fin['start_timestamp_nw']
                 #NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
-                fin.create_dataset("start_timestamp_nw", data=NW_ts_secs)
+                pdb.set_trace()
+#                fin.create_dataset("start_timestamp_nw", data=NW_ts_secs)
             else:
                 print('New start time is >2 sec from EDF start time! NOT SAVING RESULT!')
             fin.close()
