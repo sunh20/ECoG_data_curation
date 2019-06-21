@@ -56,7 +56,7 @@ In the EEG monitoring room, log in with account and password. Search for the pat
 See the *data_upload_download* folder for information about this part.
 
 
-## Step 3: Preprocess the EDF data
+## Step 3: Preprocess the EDF data (include Steve_preprocPipeline.py, runPreprocMain.sh, Steve_libPreprocess.py)
 
 As far as we can tell, the ECoG data we recieve from the EDFs does not have any preprocessing done. This means that there are issues such as DC drift, common-mode noise, and high-amplitude activity that should be corrected regardless of the analysis performed later. The techniques used are pretty simple, but they take a long time to run because of the size of each EDF. Expect several hours (if not a day or two) for each subject. The end result will be an H5 file, which can be loaded into Matlab or Python (all steps shown here use Python).
 
@@ -90,17 +90,51 @@ These are high-amplitude artifacts that occur across all channels. Each electrod
 The point of doing this is minimize filtering artifacts due to sharp changes in the signal. These high-amplitude artifacts will cause filter ringing into previously fine data. By setting these artifacts to 0 across all channels, filtering is less likely to create artifacts in the data.
 
 
-### 2. Filtering:
+#### 2. Filtering:
 
 Filtering removes parts of the signal's frequency content. For ECoG data, we want to remove low-frequency drifts. Part of this has to do with the frequency content of ECoG data, where low frequencies dominate compared to higher frequencies. This can make it difficult to analyze higher frequencies, which can have useful information. Two filters are used here: 1) a bandpass filter that passes frequencies between 1-200 Hz and 2) a notch filter that removes 60 Hz line noise and its harmonics (120, 180, 240 Hz). The filters used are finite impulse response (FIR) using the MNE toolbox.
 
 
-### 3. Resampling
+#### 3. Resampling
 
 While higher frequencies do have information, there is a limit to what we want to analyze here. The ECoG data is usually sampled at 1000 Hz from the hospital, meaning that we can look at frequencies up to ~500 Hz. We only care about frequencies up to 200 Hz at the most, so the data is downsampled to 500 Hz. This cuts the preprocessed file's disk size in half, which is useful when working with such large files. Resampling needs to be performed with low-pass filtering to avoid anti-aliasing, so the MNE toolbox's downsample script is used here.
 
 Note that some data is sampled at 2000 Hz or 256 Hz from the hospital (it happens rarely, though). In thse cases, the script automatically up/downsamples the data to 500 Hz. In addition, you may notice that the EDF sampling rate is not exactly 1000 Hz, but 999.94 Hz or something. This appears to be a bug in the code. Because of this, the script automatically rounds up the sampling rate to the appropriate value.
 
+
+
+#### 4. Common median reference
+
+The last preprocessing step is to remove common-mode noise by referencing. I use the common median here for each channel group that has more than 2 channels (this avoids re-referencing the ECG and EOG channels, if they exist). The common median is useful because it will be less influenced by any abnormally noisy channels in each group than the mean would be.
+
+
+
+### Preprocessing output file structure
+
+Structure of H5 files:
+
+- fin[‘dataset’] -> ECoG data (electrodes x timepoints)
+
+- fin['start_timestamp'][()] -> The timestamp (in sec) of the start time for the data. Using this and the sampling rate, can create an array of absolute or relative times (not in Pandas timedelta format because cannot be saved in H5 format)
+
+- fin[‘f_sample’][()] -> sampling rate (500 Hz)
+
+- fin[‘allChanArtifactInds’][()] -> indices of high amplitude artifact across all channels; these are set to 0 in the ECoG data
+
+- fin[‘chanLabels’][()] -> labels of each ECoG electrode
+
+- fin[‘SD_channels’][()] -> estimated standard deviation of each channel (channels with much higher standard deviations than others may want to be removed or at least noted as noisy)
+
+- fin[‘Kurt_channels’][()] -> estimated kurtosis of each channel (channels with much higher kurtosis values than others may want to be removed or at least noted as noisy)
+
+- fin['goodChanInds'][()] -> good channel indices, based on standard deviation (5) and kurtosis (10) thresholds on day-long channel data; different thresholds can be used as shown in Steve_libPreprocess.py>ecog_removeBadChans
+
+- fin['standardizeDenoms'][()] -> used for standardizing the data with Kam's robust median variance calculation; since the data is already mean-zero, just divide each channel by it's respective value in this variable (alternatively, can use 'SD_channels' to standardize)
+
+- fin['outlierFrameInds'][()] -> flagged outlier frames based on 20 IQR threshold; each variable in this group corresponds to one electrode, with the values being the flagged outlier indices (**Note:** This part takes much space and long time to run, so I have commented it out and most files do not have it.) 
+
+
+**Note:** There is a Python script, *Steve_libPreprocess.py*, that can load and standardize the ECoG data from the preprocessed data files.
 
 
 ## Step 4: Merge the hospital EDFs into full days (midnight to midnight)
