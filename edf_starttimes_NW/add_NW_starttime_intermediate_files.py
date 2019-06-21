@@ -45,7 +45,7 @@ def main(loadpath,sbj):
             fin = h5py.File(ecog_lp,'r+')
             edf_ts = dt.utcfromtimestamp(fin['start_timestamp'][()])
             NW_ts = dt.utcfromtimestamp(fin['start_timestamp'][()])
-#            pdb.set_trace()
+            #pdb.set_trace()
             NW_ts = NW_ts.replace(year=int(date_vals[0][6:10]), month=int(date_vals[0][0:2]), day=int(date_vals[0][3:5]), hour=int(t_vals[0][0:2]), minute=int(t_vals[0][-5:-3]), second=int(t_vals[0][-2:]), microsecond=us_val) #NW_ts.replace(minute=int(t_vals[0][-5:-3]), second=int(t_vals[0][-2:]), microsecond=us_val)
             NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
             diff_secs = (fin['start_timestamp'][()]-NW_ts_secs) #(edf_ts-NW_ts).total_seconds()
@@ -53,11 +53,11 @@ def main(loadpath,sbj):
             print(fin['start_timestamp'][()])
             if (abs(diff_secs)<2):
                 e = "/start_timestamp_nw" in fin
-                #if e:
-                    #del fin['start_timestamp_nw']
-                #NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
-                pdb.set_trace()
-#                fin.create_dataset("start_timestamp_nw", data=NW_ts_secs)
+                if e:
+                    del fin['start_timestamp_nw']
+                NW_ts_secs = (NW_ts-dt.utcfromtimestamp(0)).total_seconds()
+               # pdb.set_trace()
+                fin.create_dataset("start_timestamp_nw", data=NW_ts_secs)
             else:
                 print('New start time is >2 sec from EDF start time! NOT SAVING RESULT!')
             fin.close()
