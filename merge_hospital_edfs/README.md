@@ -141,8 +141,22 @@ Structure of H5 files:
 
 When we receive the EDF/video files from the hospital, they are broken up based on when the ECoG system was turned on/off. This means that they can start throughout the day (usually around 8-10am) and can last from a couple hours to an entire day. Because of this, we 
 
+Talk about:
+- start times from Neuroworks
+- manual TXT files to generate (criteria for merge_ignore are different channel labels or no vtc/snc)
+- running merge code
 
 ## Step 5: Add in location information
 
+Talk about:
+- Krang access
+- Lining up Krang IDs with our patient IDs
+- Skull stripping to get MNI coordinates (refer to Kurt for more info)
+- Realigning to pial surface
+- Pipelines for future improvements (pro's and con's)
+
 ## Step 6: Create synchronization files for video events
 
+Talk about:
+- Reading VTC/SNC files at hospital
+- Automatically generating vid_start_end files
