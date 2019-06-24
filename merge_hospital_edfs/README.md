@@ -1,6 +1,6 @@
 # ECoG processing pipeline
 
-There are many steps to processing the ECoG data, but it should only be necessary to do one time per subject. The result of this pipeline will be processed ECoG files from midnight to midnight that can be easily synchronized with video events.
+There are many steps to processing the ECoG data, but it should only be necessary to do one time per subject. The result of this pipeline will be processed ECoG files from midnight to midnight that can be easily synchronized with video events. While there are a few manual steps here and there, the value of this pipeline is that it minimizes the risk of user error when performing manual tasks.
 
 ## ECoG pipeline steps:
 
