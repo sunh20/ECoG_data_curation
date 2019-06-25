@@ -237,6 +237,24 @@ However, there are several open-source pipelines available (http://www.fieldtrip
 
 ## Step 6: Create synchronization files for video events
 
-Talk about:
-- Reading VTC/SNC files at hospital
-- Automatically generating vid_start_end files
+To synchronize the ECoG data with the video files, we need to access information from the VTC and SNC proprietary files that are in each patient's video folder. The VTC file contains each AVI file and its start/end time. However, these times are incorrect, possibly due to buffer load over time. To correct these start times, use the SNC files. These appear to have timing information that synchronizes video data with ECoG in Neuroworks.
+
+Unfortunately, our free version of Neuroworks (aka Natus Datashare) does not include the packages needed to read these files. Because of this, we need to read the files on the hospital ECoG computer.
+
+
+### Reading VTC/SNC files at hospital
+
+At the hospital, find the location of Wave.exe (should be on *D:* under a folder marked *Neuroworks*).
+
+To read the **VTC** files, open **ReadVTC.** Open each VTC file with it and then copy and save the output to a TXT file.
+
+To read the **SNC** files, open **Snc2Txt** for each SNC file. This app automatically generates a TXT file, so you do not need to do anything else. Be sure that the TXT files look correct and have filenames that correspond to each hospital segment.
+
+
+### Automatically generating vid_start_end files
+
+Once you have the TXT files with the VTC and SNC output, we can create an accurate list of start times for every video, which will be saved as a *vid_start_end* file. This file provides a mapping from the video times to ECoG (because we know when the ECoG starts). To generate these files, run *automatic_vid_start_end.py* (be sure to change subjects2use).
+
+```
+python automatic_vid_start_end.py
+```
