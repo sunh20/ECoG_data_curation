@@ -148,12 +148,92 @@ Talk about:
 
 ## Step 5: Add in location information
 
-Talk about:
-- Krang access
-- Lining up Krang IDs with our patient IDs
-- Skull stripping to get MNI coordinates (refer to Kurt for more info)
-- Realigning to pial surface
-- Pipelines for future improvements (pro's and con's)
+Determining electrode locations from MRI and CT reconstructions are currently performed by the Gridlab. To access the electrode files, ask Kurt Weaver (weaverk@uw.edu) for access to Krang. Within Krang, electrode locations are either in */m-gridlab/gridlab/subjects/* or */m-gridlab4/gridlab4/subjects/*.
+
+### Lining up Krang IDs with our patient IDs
+
+One issue with using the Krang electrode locations is that they have different subject identifiers than our lab. This means that each patient ID from our lab needs to be lined up with its respective Krang ID. One way to do this is to align the recording dates from the EDFs (our patient ID) with the CT acquisition date (Krang ID). Don't use the MRI acquisition date because it can be done months before the recording occurs. To find the CT acquisition date, copy over a Dicom file from *~/krangID/ct/rawdicom/* and run the following code in Matlab.
+
+```
+A = dicominfo('IM-0001-0001.dcm'); A.AcquisitionDate
+```
+
+Another way to find the date for Krang IDs is to use the GRIDLabNotebook online on OneNote (ask anyone from the Gridlab for access). Usually, each subject has notes along with dates for when at least one recording day took place.
+
+For the EDFs, you can obtain the start dates with pyEDFlib:
+
+```
+import pyedflib
+from datetime import datetime as dt
+import natsort
+import glob
+
+subjects_all=['<subjID1>','<subjID2>']
+
+for subject in subjects_all:
+    data_dir = '/nas/ecog_project/edf/'
+    edf_files = natsort.natsorted(glob.glob(data_dir+subject+'/*.edf'))
+    
+    print(edf_files[0][(len(data_dir)+9):-4])
+    fin1 = pyedflib.EdfReader(edf_files[0])
+    print(fin1.getStartdatetime())
+    fin1._close()
+```
+
+### Converting to MNI coordinates
+
+The electrode locations on Krang are located in *trodes.mat*. These coordinates are in each patient's native coordinate space, meaning that we need to transform these coordinates to a common space to look across multiple subjects (aka the MNI coordinate system). There are several open-source pipelines that do this, but they start with the raw MRI/CT files and go through many steps that the Gridlab has already done (but in a coordinate system that can easily be converted to MNI space).
+
+Currently, we use an image processing method that strips the skull from the reoriented MRI .hdr file, which is then transformed into MNI coordinates based on the FSL atlas (https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases). This process is fairly quick, but it can be quite off when comparing the final result to the locations in native space. If you have questions about this process, email Kurt Weaver (weaverk@uw.edu).
+
+#### Steps:
+
+-  Convert the electrode locations to a TXT file, using the Matlab code below
+
+```
+clear;
+load('trodes.mat');
+save('d715cc_trodes.txt','AllTrodes','-ascii','-tabs');
+```
+
+-  Strip the skull from the reoriented MRI file
+
+```
+bet2 <krangID>_mri_reorient.hdr MPRAGE -t <threshold>
+```
+
+**<threshold>** is a value from 0-1 that specifies how much of the skull to strip based on a brightness threshold on the MRI
+  
+**Note:** Helpful BET documentation: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/BET/UserGuide#bet, https://fsl.fmrib.ox.ac.uk/fslcourse/lectures/practicals/intro2/index.html, https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/userdoc/latest/quick_start.html
+
+-  Check the resulting skull stripping (and repeat the previous step if needed)
+
+```
+fsleyes
+```
+
+Load in both the original .hdr file and the MPRAGE output file to compare. Ideally, only the brain should be kept. Before the next step, make sure the MPRAGE output and the TXT electrode locations are in the pwd folder.
+
+-  Run bash script to convert electrode locations to MNI coordinate system
+
+```
+~/Trodes2MNICoords.sh <krangID> <krangID>_trodes.txt MPRAGE.nii.gz 4
+```
+
+### Realigning MNI coordinates to pial surface
+
+Even if the MNI conversion from the previous step goes well, you may notice that some electrodes are floating above the cortical surface. To overcome this, standard practice is to move each location to the nearest pial surface of the brain (based on Dykstra et al. *Neuroimage* 2012. Fieldtrip implements this in Matlab, and I use a general MNI cortical surface mesh to warp the locations to. This is run using the Matlab code below (on Mycroft).
+
+```
+/usr/local/MATLAB/R2017b/bin/matlab -nodisplay -nosplash -nodesktop -r "run('realign_electrode_locations.m');exit;" | tail -n +11
+```
+
+### Future improvements
+
+Our current pipeline is quick and does not require doing work that the Gridlab has already done again. Additionally, brain shift between the MRI and CT scans likely results in some uncertainty/error in electrode locations such that some of the errors from this current pipeline may not matter much.
+
+However, there are several open-source pipelines available (http://www.fieldtriptoolbox.org/tutorial/human_ecog/) and (https://github.com/ChangLabUcsf/img_pipe). Both of these align the MRI and CT scans to the AC-PC coordinate system. The advantages of this are that this process works no matter the orientation of the CT/MRI scans and that realigning to the pial surface occurs with each patient's warped cortical surface, not a generic one. As mentioned before, these methods likely will increase our electrode localization accuracy, but it is unclear if the improvement is worth the extra processing time.
+
 
 ## Step 6: Create synchronization files for video events
 
