@@ -139,12 +139,28 @@ Structure of H5 files:
 
 ## Step 4: Merge the hospital EDFs into full days (midnight to midnight)
 
-When we receive the EDF/video files from the hospital, they are broken up based on when the ECoG system was turned on/off. This means that they can start throughout the day (usually around 8-10am) and can last from a couple hours to an entire day. Because of this, we 
+When we receive the EDF/video files from the hospital, they are broken up based on when the ECoG system was turned on/off. This means that they can start throughout the day (usually around 8-10am) and can last from a couple hours to an entire day. Because of this, we want to put the final ECoG files in a format from midnight to midnight. There are 3 main steps:
 
-Talk about:
-- start times from Neuroworks
-- manual TXT files to generate (criteria for merge_ignore are different channel labels or no vtc/snc)
-- running merge code
+### 1. Obtain start times from Neuroworks
+
+See Neuroworks start time folder.
+
+
+### 2. Check electrode labels and manually generate merge TXT files
+
+Before merging the files, it is important to check that they have the same electrode labels. The labels on the first hospital segment are sometimes EEG and the last hospital segment usually has different labels too. You will want to check this and exclude the hospital segments with different labels. This can be done with *Check if location labels are consistent.ipynb*, which can automatically check which labels differ from the others. Place the filenames for these hospital segments (along with any segments which do not have start times from Neuroworks) into the *bad_files* variable of the 3rd to last cell. Running this cell will save a **merge_ignore.txt** file, which will tell the merge code later to ignore those files when merging.
+
+In addition, you will want to use the middle cells of *Check if location labels are consistent.ipynb* to determine which channels to keep. I would recommend keeping all of the grid/strip electrodes (you can also keep ECG and EOG if you want). Change the *final_chan_inds* variable appropriately so that it indexes the channels you wish to keep. The code will save a *chan_inds_use.txt* file which will be used during merging.
+
+
+### 3. Merge the ECoG data
+
+To merge the ECoG data, run *run_test_hospital_AJILE_conversion.py*. Be sure to change *patients_all.* In addition, there is *merge_day_start* variable in case the merge process crashes during a certain day and you want to restart the merge from that day. Its default value is 1 (setting it to 0 causes it to wrap around to the last merge day).
+
+```
+python run_test_hospital_AJILE_conversion.py
+```
+
 
 ## Step 5: Add in location information
 
